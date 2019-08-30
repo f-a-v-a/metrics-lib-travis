@@ -1,6 +1,4 @@
-classes/
 cobertura.ser
-generated/
 metrics-lib-*.jar
 metrics-lib-*.tar.gz
 .classpath
