@@ -26,13 +26,14 @@ public class BridgePoolAssignmentImpl extends DescriptorImpl
   }
 
   private void parseDescriptorBytes() throws DescriptorParseException {
-    Scanner scanner = this.newScanner().useDelimiter(NL);
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      if (line.startsWith(Key.BRIDGE_POOL_ASSIGNMENT.keyword + SP)) {
-        this.parseBridgePoolAssignmentLine(line);
-      } else {
-        this.parseBridgeLine(line);
+    try (Scanner scanner = this.newScanner().useDelimiter(NL)) {
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        if (line.startsWith(Key.BRIDGE_POOL_ASSIGNMENT.keyword + SP)) {
+          this.parseBridgePoolAssignmentLine(line);
+        } else {
+          this.parseBridgeLine(line);
+        }
       }
     }
   }
