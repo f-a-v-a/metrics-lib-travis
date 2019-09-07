@@ -69,7 +69,10 @@ public class TorperfResultImpl extends DescriptorImpl
 
   private void parseTorperfResultLine()
       throws DescriptorParseException {
-    String line = this.newScanner().nextLine();
+    String line = null;
+    try (Scanner scanner = this.newScanner()) {
+      line = scanner.nextLine();
+    }
     while (null != line && line.startsWith("@") && line.contains("\n")) {
       line = line.split("\n")[1];
     }
