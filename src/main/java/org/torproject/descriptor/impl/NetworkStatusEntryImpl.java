@@ -75,51 +75,52 @@ public class NetworkStatusEntryImpl implements NetworkStatusEntry {
     /* We need to pass this.offset and this.length, because the overloaded
      * method without arguments would use this.parent.offset and
      * this.parent.length as bounds, which is not what we want! */
-    Scanner scanner = this.parent.newScanner(this.offset, this.length)
-        .useDelimiter(NL);
-    String line;
-    if (!scanner.hasNext() || !(line = scanner.next()).startsWith("r ")) {
-      throw new DescriptorParseException("Status entry must start with "
-          + "an r line.");
-    }
-    String[] rlineParts = line.split("[ \t]+");
-    this.parseRLine(line, rlineParts);
-    while (scanner.hasNext()) {
-      line = scanner.next();
-      String[] parts = !line.startsWith(Key.OPT.keyword + SP)
-          ? line.split("[ \t]+")
-          : line.substring(Key.OPT.keyword.length() + 1).split("[ \t]+");
-      Key key = Key.get(parts[0]);
-      switch (key) {
-        case A:
-          this.parseALine(line, parts);
-          break;
-        case S:
-          this.parseSLine(parts);
-          break;
-        case V:
-          this.parseVLine(line);
-          break;
-        case PR:
-          this.parsePrLine(line, parts);
-          break;
-        case W:
-          this.parseWLine(line, parts);
-          break;
-        case P:
-          this.parsePLine(line, parts);
-          break;
-        case M:
-          this.parseMLine(line, parts);
-          break;
-        case ID:
-          this.parseIdLine(line, parts);
-          break;
-        default:
-          if (this.unrecognizedLines == null) {
-            this.unrecognizedLines = new ArrayList<>();
-          }
-          this.unrecognizedLines.add(line);
+    try (Scanner scanner = this.parent.newScanner(this.offset, this.length)
+        .useDelimiter(NL)) {
+      String line;
+      if (!scanner.hasNext() || !(line = scanner.next()).startsWith("r ")) {
+        throw new DescriptorParseException("Status entry must start with "
+                + "an r line.");
+      }
+      String[] rlineParts = line.split("[ \t]+");
+      this.parseRLine(line, rlineParts);
+      while (scanner.hasNext()) {
+        line = scanner.next();
+        String[] parts = !line.startsWith(Key.OPT.keyword + SP)
+                ? line.split("[ \t]+")
+                : line.substring(Key.OPT.keyword.length() + 1).split("[ \t]+");
+        Key key = Key.get(parts[0]);
+        switch (key) {
+          case A:
+            this.parseALine(line, parts);
+            break;
+          case S:
+            this.parseSLine(parts);
+            break;
+          case V:
+            this.parseVLine(line);
+            break;
+          case PR:
+            this.parsePrLine(line, parts);
+            break;
+          case W:
+            this.parseWLine(line, parts);
+            break;
+          case P:
+            this.parsePLine(line, parts);
+            break;
+          case M:
+            this.parseMLine(line, parts);
+            break;
+          case ID:
+            this.parseIdLine(line, parts);
+            break;
+          default:
+            if (this.unrecognizedLines == null) {
+              this.unrecognizedLines = new ArrayList<>();
+            }
+            this.unrecognizedLines.add(line);
+        }
       }
     }
   }
