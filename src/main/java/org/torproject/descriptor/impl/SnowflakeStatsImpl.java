@@ -43,40 +43,41 @@ public class SnowflakeStatsImpl extends DescriptorImpl
   }
 
   private void parseDescriptorBytes() throws DescriptorParseException {
-    Scanner scanner = this.newScanner().useDelimiter(NL);
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      if (line.startsWith("@")) {
-        continue;
-      }
-      String[] parts = line.split("[ \t]+");
-      Key key = Key.get(parts[0]);
-      switch (key) {
-        case SNOWFLAKE_STATS_END:
-          this.parseSnowflakeStatsEnd(line, parts);
-          break;
-        case SNOWFLAKE_IPS:
-          this.parseSnowflakeIps(line, parts);
-          break;
-        case SNOWFLAKE_IPS_TOTAL:
-          this.parseSnowflakeIpsTotal(line, parts);
-          break;
-        case SNOWFLAKE_IDLE_COUNT:
-          this.parseSnowflakeIdleCount(line, parts);
-          break;
-        case CLIENT_DENIED_COUNT:
-          this.parseClientDeniedCount(line, parts);
-          break;
-        case CLIENT_SNOWFLAKE_MATCH_COUNT:
-          this.parseClientSnowflakeMatchCount(line, parts);
-          break;
-        case INVALID:
-        default:
-          ParseHelper.parseKeyword(line, parts[0]);
-          if (this.unrecognizedLines == null) {
-            this.unrecognizedLines = new ArrayList<>();
-          }
-          this.unrecognizedLines.add(line);
+    try (Scanner scanner = this.newScanner().useDelimiter(NL)) {
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        if (line.startsWith("@")) {
+          continue;
+        }
+        String[] parts = line.split("[ \t]+");
+        Key key = Key.get(parts[0]);
+        switch (key) {
+          case SNOWFLAKE_STATS_END:
+            this.parseSnowflakeStatsEnd(line, parts);
+            break;
+          case SNOWFLAKE_IPS:
+            this.parseSnowflakeIps(line, parts);
+            break;
+          case SNOWFLAKE_IPS_TOTAL:
+            this.parseSnowflakeIpsTotal(line, parts);
+            break;
+          case SNOWFLAKE_IDLE_COUNT:
+            this.parseSnowflakeIdleCount(line, parts);
+            break;
+          case CLIENT_DENIED_COUNT:
+            this.parseClientDeniedCount(line, parts);
+            break;
+          case CLIENT_SNOWFLAKE_MATCH_COUNT:
+            this.parseClientSnowflakeMatchCount(line, parts);
+            break;
+          case INVALID:
+          default:
+            ParseHelper.parseKeyword(line, parts[0]);
+            if (this.unrecognizedLines == null) {
+              this.unrecognizedLines = new ArrayList<>();
+            }
+            this.unrecognizedLines.add(line);
+        }
       }
     }
   }
