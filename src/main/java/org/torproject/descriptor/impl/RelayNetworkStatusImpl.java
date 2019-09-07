@@ -37,70 +37,71 @@ public class RelayNetworkStatusImpl extends NetworkStatusImpl
 
   protected void parseHeader(int offset, int length)
       throws DescriptorParseException {
-    Scanner scanner = this.newScanner(offset, length).useDelimiter(NL);
-    Key nextCrypto = Key.EMPTY;
-    StringBuilder crypto = null;
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      if (line.isEmpty()) {
-        continue;
-      }
-      String[] parts = line.split("[ \t]+");
-      Key key = Key.get(parts[0]);
-      switch (key) {
-        case NETWORK_STATUS_VERSION:
-          this.parseNetworkStatusVersionLine(line);
-          break;
-        case DIR_SOURCE:
-          this.parseDirSourceLine(line, parts);
-          break;
-        case FINGERPRINT:
-          this.parseFingerprintLine(line, parts);
-          break;
-        case CONTACT:
-          this.parseContactLine(line);
-          break;
-        case DIR_SIGNING_KEY:
-          this.parseDirSigningKeyLine(line);
-          nextCrypto = key;
-          break;
-        case CLIENT_VERSIONS:
-          this.parseClientVersionsLine(line, parts);
-          break;
-        case SERVER_VERSIONS:
-          this.parseServerVersionsLine(line, parts);
-          break;
-        case PUBLISHED:
-          this.parsePublishedLine(line, parts);
-          break;
-        case DIR_OPTIONS:
-          this.parseDirOptionsLine(parts);
-          break;
-        case CRYPTO_BEGIN:
-          crypto = new StringBuilder();
-          crypto.append(line).append(NL);
-          break;
-        case CRYPTO_END:
-          crypto.append(line).append(NL);
-          String cryptoString = crypto.toString();
-          crypto = null;
-          if (nextCrypto.equals(Key.DIR_SIGNING_KEY)) {
-            this.dirSigningKey = cryptoString;
-          } else {
-            throw new DescriptorParseException("Unrecognized crypto "
-                + "block in v2 network status.");
-          }
-          nextCrypto = Key.EMPTY;
-          break;
-        default:
-          if (crypto != null) {
+    try (Scanner scanner = this.newScanner(offset, length).useDelimiter(NL)) {
+      Key nextCrypto = Key.EMPTY;
+      StringBuilder crypto = null;
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        if (line.isEmpty()) {
+          continue;
+        }
+        String[] parts = line.split("[ \t]+");
+        Key key = Key.get(parts[0]);
+        switch (key) {
+          case NETWORK_STATUS_VERSION:
+            this.parseNetworkStatusVersionLine(line);
+            break;
+          case DIR_SOURCE:
+            this.parseDirSourceLine(line, parts);
+            break;
+          case FINGERPRINT:
+            this.parseFingerprintLine(line, parts);
+            break;
+          case CONTACT:
+            this.parseContactLine(line);
+            break;
+          case DIR_SIGNING_KEY:
+            this.parseDirSigningKeyLine(line);
+            nextCrypto = key;
+            break;
+          case CLIENT_VERSIONS:
+            this.parseClientVersionsLine(line, parts);
+            break;
+          case SERVER_VERSIONS:
+            this.parseServerVersionsLine(line, parts);
+            break;
+          case PUBLISHED:
+            this.parsePublishedLine(line, parts);
+            break;
+          case DIR_OPTIONS:
+            this.parseDirOptionsLine(parts);
+            break;
+          case CRYPTO_BEGIN:
+            crypto = new StringBuilder();
             crypto.append(line).append(NL);
-          } else {
-            if (this.unrecognizedLines == null) {
-              this.unrecognizedLines = new ArrayList<>();
+            break;
+          case CRYPTO_END:
+            crypto.append(line).append(NL);
+            String cryptoString = crypto.toString();
+            crypto = null;
+            if (nextCrypto.equals(Key.DIR_SIGNING_KEY)) {
+              this.dirSigningKey = cryptoString;
+            } else {
+              throw new DescriptorParseException("Unrecognized crypto "
+                      + "block in v2 network status.");
             }
-            this.unrecognizedLines.add(line);
-          }
+            nextCrypto = Key.EMPTY;
+            break;
+          default:
+            if (crypto != null) {
+              crypto.append(line).append(NL);
+            } else {
+              if (this.unrecognizedLines == null) {
+                this.unrecognizedLines = new ArrayList<>();
+              }
+              this.unrecognizedLines.add(line);
+            }
+        }
       }
     }
   }
@@ -113,43 +114,44 @@ public class RelayNetworkStatusImpl extends NetworkStatusImpl
 
   protected void parseDirectorySignature(int offset, int length)
       throws DescriptorParseException {
-    Scanner scanner = this.newScanner(offset, length).useDelimiter(NL);
-    Key nextCrypto = Key.EMPTY;
-    StringBuilder crypto = null;
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      String[] parts = line.split("[ \t]+");
-      Key key = Key.get(parts[0]);
-      switch (key) {
-        case DIRECTORY_SIGNATURE:
-          this.parseDirectorySignatureLine(line, parts);
-          nextCrypto = key;
-          break;
-        case CRYPTO_BEGIN:
-          crypto = new StringBuilder();
-          crypto.append(line).append(NL);
-          break;
-        case CRYPTO_END:
-          crypto.append(line).append(NL);
-          String cryptoString = crypto.toString();
-          crypto = null;
-          if (nextCrypto.equals(Key.DIRECTORY_SIGNATURE)) {
-            this.directorySignature = cryptoString;
-          } else {
-            throw new DescriptorParseException("Unrecognized crypto "
-                + "block in v2 network status.");
-          }
-          nextCrypto = Key.EMPTY;
-          break;
-        default:
-          if (crypto != null) {
+    try (Scanner scanner = this.newScanner(offset, length).useDelimiter(NL)) {
+      Key nextCrypto = Key.EMPTY;
+      StringBuilder crypto = null;
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        String[] parts = line.split("[ \t]+");
+        Key key = Key.get(parts[0]);
+        switch (key) {
+          case DIRECTORY_SIGNATURE:
+            this.parseDirectorySignatureLine(line, parts);
+            nextCrypto = key;
+            break;
+          case CRYPTO_BEGIN:
+            crypto = new StringBuilder();
             crypto.append(line).append(NL);
-          } else {
-            if (this.unrecognizedLines == null) {
-              this.unrecognizedLines = new ArrayList<>();
+            break;
+          case CRYPTO_END:
+            crypto.append(line).append(NL);
+            String cryptoString = crypto.toString();
+            crypto = null;
+            if (nextCrypto.equals(Key.DIRECTORY_SIGNATURE)) {
+              this.directorySignature = cryptoString;
+            } else {
+              throw new DescriptorParseException("Unrecognized crypto "
+                      + "block in v2 network status.");
             }
-            this.unrecognizedLines.add(line);
-          }
+            nextCrypto = Key.EMPTY;
+            break;
+          default:
+            if (crypto != null) {
+              crypto.append(line).append(NL);
+            } else {
+              if (this.unrecognizedLines == null) {
+                this.unrecognizedLines = new ArrayList<>();
+              }
+              this.unrecognizedLines.add(line);
+            }
+        }
       }
     }
   }

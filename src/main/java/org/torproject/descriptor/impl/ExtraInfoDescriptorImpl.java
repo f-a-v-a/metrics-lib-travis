@@ -73,208 +73,209 @@ public abstract class ExtraInfoDescriptorImpl extends DescriptorImpl
   }
 
   private void parseDescriptorBytes() throws DescriptorParseException {
-    Scanner scanner = this.newScanner().useDelimiter(NL);
-    Key nextCrypto = Key.EMPTY;
-    List<String> cryptoLines = null;
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      String lineNoOpt = line.startsWith(Key.OPT.keyword + SP)
-          ? line.substring(Key.OPT.keyword.length() + 1) : line;
-      String[] partsNoOpt = lineNoOpt.split("[ \t]+");
-      Key key = Key.get(partsNoOpt[0]);
-      switch (key) {
-        case EXTRA_INFO:
-          this.parseExtraInfoLine(line, partsNoOpt);
-          break;
-        case PUBLISHED:
-          this.parsePublishedLine(line, partsNoOpt);
-          break;
-        case READ_HISTORY:
-          this.parseReadHistoryLine(line, partsNoOpt);
-          break;
-        case WRITE_HISTORY:
-          this.parseWriteHistoryLine(line, partsNoOpt);
-          break;
-        case GEOIP_DB_DIGEST:
-          this.parseGeoipDbDigestLine(line, partsNoOpt);
-          break;
-        case GEOIP6_DB_DIGEST:
-          this.parseGeoip6DbDigestLine(line, partsNoOpt);
-          break;
-        case GEOIP_START_TIME:
-          this.parseGeoipStartTimeLine(line, partsNoOpt);
-          break;
-        case GEOIP_CLIENT_ORIGINS:
-          this.parseGeoipClientOriginsLine(line, partsNoOpt);
-          break;
-        case DIRREQ_STATS_END:
-          this.parseDirreqStatsEndLine(line, partsNoOpt);
-          break;
-        case DIRREQ_V2_IPS:
-          this.parseDirreqV2IpsLine(line, partsNoOpt);
-          break;
-        case DIRREQ_V3_IPS:
-          this.parseDirreqV3IpsLine(line, partsNoOpt);
-          break;
-        case DIRREQ_V2_REQS:
-          this.parseDirreqV2ReqsLine(line, partsNoOpt);
-          break;
-        case DIRREQ_V3_REQS:
-          this.parseDirreqV3ReqsLine(line, partsNoOpt);
-          break;
-        case DIRREQ_V2_SHARE:
-          this.parseDirreqV2ShareLine(line, partsNoOpt);
-          break;
-        case DIRREQ_V3_SHARE:
-          this.parseDirreqV3ShareLine(line, partsNoOpt);
-          break;
-        case DIRREQ_V2_RESP:
-          this.parseDirreqV2RespLine(line, partsNoOpt);
-          break;
-        case DIRREQ_V3_RESP:
-          this.parseDirreqV3RespLine(line, partsNoOpt);
-          break;
-        case DIRREQ_V2_DIRECT_DL:
-          this.parseDirreqV2DirectDlLine(line, partsNoOpt);
-          break;
-        case DIRREQ_V3_DIRECT_DL:
-          this.parseDirreqV3DirectDlLine(line, partsNoOpt);
-          break;
-        case DIRREQ_V2_TUNNELED_DL:
-          this.parseDirreqV2TunneledDlLine(line, partsNoOpt);
-          break;
-        case DIRREQ_V3_TUNNELED_DL:
-          this.parseDirreqV3TunneledDlLine(line, partsNoOpt);
-          break;
-        case DIRREQ_READ_HISTORY:
-          this.parseDirreqReadHistoryLine(line, partsNoOpt);
-          break;
-        case DIRREQ_WRITE_HISTORY:
-          this.parseDirreqWriteHistoryLine(line, partsNoOpt);
-          break;
-        case ENTRY_STATS_END:
-          this.parseEntryStatsEndLine(line, partsNoOpt);
-          break;
-        case ENTRY_IPS:
-          this.parseEntryIpsLine(line, partsNoOpt);
-          break;
-        case CELL_STATS_END:
-          this.parseCellStatsEndLine(line, partsNoOpt);
-          break;
-        case CELL_PROCESSED_CELLS:
-          this.parseCellProcessedCellsLine(line, partsNoOpt);
-          break;
-        case CELL_QUEUED_CELLS:
-          this.parseCellQueuedCellsLine(line, partsNoOpt);
-          break;
-        case CELL_TIME_IN_QUEUE:
-          this.parseCellTimeInQueueLine(line, partsNoOpt);
-          break;
-        case CELL_CIRCUITS_PER_DECILE:
-          this.parseCellCircuitsPerDecileLine(line,
-              partsNoOpt);
-          break;
-        case CONN_BI_DIRECT:
-          this.parseConnBiDirectLine(line, partsNoOpt);
-          break;
-        case EXIT_STATS_END:
-          this.parseExitStatsEndLine(line, partsNoOpt);
-          break;
-        case EXIT_KIBIBYTES_WRITTEN:
-          this.parseExitKibibytesWrittenLine(line, partsNoOpt);
-          break;
-        case EXIT_KIBIBYTES_READ:
-          this.parseExitKibibytesReadLine(line, partsNoOpt);
-          break;
-        case EXIT_STREAMS_OPENED:
-          this.parseExitStreamsOpenedLine(line, partsNoOpt);
-          break;
-        case BRIDGE_STATS_END:
-          this.parseBridgeStatsEndLine(line, partsNoOpt);
-          break;
-        case BRIDGE_IPS:
-          this.parseBridgeStatsIpsLine(line, partsNoOpt);
-          break;
-        case BRIDGE_IP_VERSIONS:
-          this.parseBridgeIpVersionsLine(line, partsNoOpt);
-          break;
-        case BRIDGE_IP_TRANSPORTS:
-          this.parseBridgeIpTransportsLine(line, partsNoOpt);
-          break;
-        case TRANSPORT:
-          this.parseTransportLine(line, partsNoOpt);
-          break;
-        case HIDSERV_STATS_END:
-          this.parseHidservStatsEndLine(line, partsNoOpt);
-          break;
-        case HIDSERV_REND_RELAYED_CELLS:
-          this.parseHidservRendRelayedCellsLine(line,
-              partsNoOpt);
-          break;
-        case HIDSERV_DIR_ONIONS_SEEN:
-          this.parseHidservDirOnionsSeenLine(line, partsNoOpt);
-          break;
-        case PADDING_COUNTS:
-          this.parsePaddingCountsLine(line, partsNoOpt);
-          break;
-        case IDENTITY_ED25519:
-          this.parseIdentityEd25519Line(line, partsNoOpt);
-          nextCrypto = key;
-          break;
-        case MASTER_KEY_ED25519:
-          this.parseMasterKeyEd25519Line(line, partsNoOpt);
-          break;
-        case ROUTER_SIG_ED25519:
-          this.parseRouterSigEd25519Line(line, partsNoOpt);
-          break;
-        case ROUTER_SIGNATURE:
-          this.parseRouterSignatureLine(line, lineNoOpt);
-          nextCrypto = key;
-          break;
-        case ROUTER_DIGEST:
-          this.parseRouterDigestLine(line, partsNoOpt);
-          break;
-        case ROUTER_DIGEST_SHA256:
-          this.parseRouterDigestSha256Line(line, partsNoOpt);
-          break;
-        case CRYPTO_BEGIN:
-          cryptoLines = new ArrayList<>();
-          cryptoLines.add(line);
-          break;
-        case CRYPTO_END:
-          cryptoLines.add(line);
-          StringBuilder sb = new StringBuilder();
-          for (String cryptoLine : cryptoLines) {
-            sb.append(NL).append(cryptoLine);
-          }
-          String cryptoString = sb.toString().substring(1);
-          switch (nextCrypto) {
-            case ROUTER_SIGNATURE:
-              this.routerSignature = cryptoString;
-              break;
-            case IDENTITY_ED25519:
-              this.identityEd25519 = cryptoString;
-              this.parseIdentityEd25519CryptoBlock(cryptoString);
-              break;
-            default:
+    try (Scanner scanner = this.newScanner().useDelimiter(NL)) {
+      Key nextCrypto = Key.EMPTY;
+      List<String> cryptoLines = null;
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        String lineNoOpt = line.startsWith(Key.OPT.keyword + SP)
+                ? line.substring(Key.OPT.keyword.length() + 1) : line;
+        String[] partsNoOpt = lineNoOpt.split("[ \t]+");
+        Key key = Key.get(partsNoOpt[0]);
+        switch (key) {
+          case EXTRA_INFO:
+            this.parseExtraInfoLine(line, partsNoOpt);
+            break;
+          case PUBLISHED:
+            this.parsePublishedLine(line, partsNoOpt);
+            break;
+          case READ_HISTORY:
+            this.parseReadHistoryLine(line, partsNoOpt);
+            break;
+          case WRITE_HISTORY:
+            this.parseWriteHistoryLine(line, partsNoOpt);
+            break;
+          case GEOIP_DB_DIGEST:
+            this.parseGeoipDbDigestLine(line, partsNoOpt);
+            break;
+          case GEOIP6_DB_DIGEST:
+            this.parseGeoip6DbDigestLine(line, partsNoOpt);
+            break;
+          case GEOIP_START_TIME:
+            this.parseGeoipStartTimeLine(line, partsNoOpt);
+            break;
+          case GEOIP_CLIENT_ORIGINS:
+            this.parseGeoipClientOriginsLine(line, partsNoOpt);
+            break;
+          case DIRREQ_STATS_END:
+            this.parseDirreqStatsEndLine(line, partsNoOpt);
+            break;
+          case DIRREQ_V2_IPS:
+            this.parseDirreqV2IpsLine(line, partsNoOpt);
+            break;
+          case DIRREQ_V3_IPS:
+            this.parseDirreqV3IpsLine(line, partsNoOpt);
+            break;
+          case DIRREQ_V2_REQS:
+            this.parseDirreqV2ReqsLine(line, partsNoOpt);
+            break;
+          case DIRREQ_V3_REQS:
+            this.parseDirreqV3ReqsLine(line, partsNoOpt);
+            break;
+          case DIRREQ_V2_SHARE:
+            this.parseDirreqV2ShareLine(line, partsNoOpt);
+            break;
+          case DIRREQ_V3_SHARE:
+            this.parseDirreqV3ShareLine(line, partsNoOpt);
+            break;
+          case DIRREQ_V2_RESP:
+            this.parseDirreqV2RespLine(line, partsNoOpt);
+            break;
+          case DIRREQ_V3_RESP:
+            this.parseDirreqV3RespLine(line, partsNoOpt);
+            break;
+          case DIRREQ_V2_DIRECT_DL:
+            this.parseDirreqV2DirectDlLine(line, partsNoOpt);
+            break;
+          case DIRREQ_V3_DIRECT_DL:
+            this.parseDirreqV3DirectDlLine(line, partsNoOpt);
+            break;
+          case DIRREQ_V2_TUNNELED_DL:
+            this.parseDirreqV2TunneledDlLine(line, partsNoOpt);
+            break;
+          case DIRREQ_V3_TUNNELED_DL:
+            this.parseDirreqV3TunneledDlLine(line, partsNoOpt);
+            break;
+          case DIRREQ_READ_HISTORY:
+            this.parseDirreqReadHistoryLine(line, partsNoOpt);
+            break;
+          case DIRREQ_WRITE_HISTORY:
+            this.parseDirreqWriteHistoryLine(line, partsNoOpt);
+            break;
+          case ENTRY_STATS_END:
+            this.parseEntryStatsEndLine(line, partsNoOpt);
+            break;
+          case ENTRY_IPS:
+            this.parseEntryIpsLine(line, partsNoOpt);
+            break;
+          case CELL_STATS_END:
+            this.parseCellStatsEndLine(line, partsNoOpt);
+            break;
+          case CELL_PROCESSED_CELLS:
+            this.parseCellProcessedCellsLine(line, partsNoOpt);
+            break;
+          case CELL_QUEUED_CELLS:
+            this.parseCellQueuedCellsLine(line, partsNoOpt);
+            break;
+          case CELL_TIME_IN_QUEUE:
+            this.parseCellTimeInQueueLine(line, partsNoOpt);
+            break;
+          case CELL_CIRCUITS_PER_DECILE:
+            this.parseCellCircuitsPerDecileLine(line,
+                    partsNoOpt);
+            break;
+          case CONN_BI_DIRECT:
+            this.parseConnBiDirectLine(line, partsNoOpt);
+            break;
+          case EXIT_STATS_END:
+            this.parseExitStatsEndLine(line, partsNoOpt);
+            break;
+          case EXIT_KIBIBYTES_WRITTEN:
+            this.parseExitKibibytesWrittenLine(line, partsNoOpt);
+            break;
+          case EXIT_KIBIBYTES_READ:
+            this.parseExitKibibytesReadLine(line, partsNoOpt);
+            break;
+          case EXIT_STREAMS_OPENED:
+            this.parseExitStreamsOpenedLine(line, partsNoOpt);
+            break;
+          case BRIDGE_STATS_END:
+            this.parseBridgeStatsEndLine(line, partsNoOpt);
+            break;
+          case BRIDGE_IPS:
+            this.parseBridgeStatsIpsLine(line, partsNoOpt);
+            break;
+          case BRIDGE_IP_VERSIONS:
+            this.parseBridgeIpVersionsLine(line, partsNoOpt);
+            break;
+          case BRIDGE_IP_TRANSPORTS:
+            this.parseBridgeIpTransportsLine(line, partsNoOpt);
+            break;
+          case TRANSPORT:
+            this.parseTransportLine(line, partsNoOpt);
+            break;
+          case HIDSERV_STATS_END:
+            this.parseHidservStatsEndLine(line, partsNoOpt);
+            break;
+          case HIDSERV_REND_RELAYED_CELLS:
+            this.parseHidservRendRelayedCellsLine(line,
+                    partsNoOpt);
+            break;
+          case HIDSERV_DIR_ONIONS_SEEN:
+            this.parseHidservDirOnionsSeenLine(line, partsNoOpt);
+            break;
+          case PADDING_COUNTS:
+            this.parsePaddingCountsLine(line, partsNoOpt);
+            break;
+          case IDENTITY_ED25519:
+            this.parseIdentityEd25519Line(line, partsNoOpt);
+            nextCrypto = key;
+            break;
+          case MASTER_KEY_ED25519:
+            this.parseMasterKeyEd25519Line(line, partsNoOpt);
+            break;
+          case ROUTER_SIG_ED25519:
+            this.parseRouterSigEd25519Line(line, partsNoOpt);
+            break;
+          case ROUTER_SIGNATURE:
+            this.parseRouterSignatureLine(line, lineNoOpt);
+            nextCrypto = key;
+            break;
+          case ROUTER_DIGEST:
+            this.parseRouterDigestLine(line, partsNoOpt);
+            break;
+          case ROUTER_DIGEST_SHA256:
+            this.parseRouterDigestSha256Line(line, partsNoOpt);
+            break;
+          case CRYPTO_BEGIN:
+            cryptoLines = new ArrayList<>();
+            cryptoLines.add(line);
+            break;
+          case CRYPTO_END:
+            cryptoLines.add(line);
+            StringBuilder sb = new StringBuilder();
+            for (String cryptoLine : cryptoLines) {
+              sb.append(NL).append(cryptoLine);
+            }
+            String cryptoString = sb.toString().substring(1);
+            switch (nextCrypto) {
+              case ROUTER_SIGNATURE:
+                this.routerSignature = cryptoString;
+                break;
+              case IDENTITY_ED25519:
+                this.identityEd25519 = cryptoString;
+                this.parseIdentityEd25519CryptoBlock(cryptoString);
+                break;
+              default:
+                if (this.unrecognizedLines == null) {
+                  this.unrecognizedLines = new ArrayList<>();
+                }
+                this.unrecognizedLines.addAll(cryptoLines);
+            }
+            cryptoLines = null;
+            nextCrypto = Key.EMPTY;
+            break;
+          default:
+            if (cryptoLines != null) {
+              cryptoLines.add(line);
+            } else {
+              ParseHelper.parseKeyword(line, partsNoOpt[0]);
               if (this.unrecognizedLines == null) {
                 this.unrecognizedLines = new ArrayList<>();
               }
-              this.unrecognizedLines.addAll(cryptoLines);
-          }
-          cryptoLines = null;
-          nextCrypto = Key.EMPTY;
-          break;
-        default:
-          if (cryptoLines != null) {
-            cryptoLines.add(line);
-          } else {
-            ParseHelper.parseKeyword(line, partsNoOpt[0]);
-            if (this.unrecognizedLines == null) {
-              this.unrecognizedLines = new ArrayList<>();
+              this.unrecognizedLines.add(line);
             }
-            this.unrecognizedLines.add(line);
-          }
+        }
       }
     }
   }

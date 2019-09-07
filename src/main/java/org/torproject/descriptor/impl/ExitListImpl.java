@@ -48,52 +48,53 @@ public class ExitListImpl extends DescriptorImpl implements ExitList {
 
   private void splitAndParseExitListEntries()
       throws DescriptorParseException {
-    Scanner scanner = this.newScanner().useDelimiter(EOL);
-    StringBuilder sb = new StringBuilder();
-    boolean firstEntry = true;
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      if (line.startsWith("@")) { /* Skip annotation. */
-        if (!scanner.hasNext()) {
-          throw new DescriptorParseException("Descriptor is empty.");
-        } else {
-          line = scanner.next();
+    try (Scanner scanner = this.newScanner().useDelimiter(EOL)) {
+      StringBuilder sb = new StringBuilder();
+      boolean firstEntry = true;
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        if (line.startsWith("@")) { /* Skip annotation. */
+          if (!scanner.hasNext()) {
+            throw new DescriptorParseException("Descriptor is empty.");
+          } else {
+            line = scanner.next();
+          }
+        }
+        String[] parts = line.split(" ");
+        String keyword = parts[0];
+        switch (keyword) {
+          case "Downloaded":
+            this.downloadedMillis = ParseHelper.parseTimestampAtIndex(line,
+                    parts, 1, 2);
+            break;
+          case "ExitNode":
+            if (!firstEntry) {
+              this.parseExitListEntry(sb.toString());
+            } else {
+              firstEntry = false;
+            }
+            sb = new StringBuilder();
+            sb.append(line).append(ExitList.EOL);
+            break;
+          case "Published":
+            sb.append(line).append(ExitList.EOL);
+            break;
+          case "LastStatus":
+            sb.append(line).append(ExitList.EOL);
+            break;
+          case "ExitAddress":
+            sb.append(line).append(ExitList.EOL);
+            break;
+          default:
+            if (this.unrecognizedLines == null) {
+              this.unrecognizedLines = new ArrayList<>();
+            }
+            this.unrecognizedLines.add(line);
         }
       }
-      String[] parts = line.split(" ");
-      String keyword = parts[0];
-      switch (keyword) {
-        case "Downloaded":
-          this.downloadedMillis = ParseHelper.parseTimestampAtIndex(line,
-              parts, 1, 2);
-          break;
-        case "ExitNode":
-          if (!firstEntry) {
-            this.parseExitListEntry(sb.toString());
-          } else {
-            firstEntry = false;
-          }
-          sb = new StringBuilder();
-          sb.append(line).append(ExitList.EOL);
-          break;
-        case "Published":
-          sb.append(line).append(ExitList.EOL);
-          break;
-        case "LastStatus":
-          sb.append(line).append(ExitList.EOL);
-          break;
-        case "ExitAddress":
-          sb.append(line).append(ExitList.EOL);
-          break;
-        default:
-          if (this.unrecognizedLines == null) {
-            this.unrecognizedLines = new ArrayList<>();
-          }
-          this.unrecognizedLines.add(line);
-      }
+      /* Parse the last entry. */
+      this.parseExitListEntry(sb.toString());
     }
-    /* Parse the last entry. */
-    this.parseExitListEntry(sb.toString());
   }
 
   protected void parseExitListEntry(String exitListEntryString)

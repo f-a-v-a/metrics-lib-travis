@@ -87,36 +87,37 @@ public class DirSourceEntryImpl implements DirSourceEntry {
     /* We need to pass this.offset and this.length, because the overloaded
      * method without arguments would use this.parent.offset and
      * this.parent.length as bounds, which is not what we want! */
-    Scanner scanner = this.parent.newScanner(this.offset, this.length)
-        .useDelimiter(NL);
-    boolean skipCrypto = false;
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      String[] parts = line.split(SP);
-      Key key = Key.get(parts[0]);
-      switch (key) {
-        case DIR_SOURCE:
-          this.parseDirSourceLine(line);
-          break;
-        case CONTACT:
-          this.parseContactLine(line);
-          break;
-        case VOTE_DIGEST:
-          this.parseVoteDigestLine(line);
-          break;
-        case CRYPTO_BEGIN:
-          skipCrypto = true;
-          break;
-        case CRYPTO_END:
-          skipCrypto = false;
-          break;
-        default:
-          if (!skipCrypto) {
-            if (this.unrecognizedLines == null) {
-              this.unrecognizedLines = new ArrayList<>();
+    try (Scanner scanner = this.parent.newScanner(this.offset, this.length)
+        .useDelimiter(NL)) {
+      boolean skipCrypto = false;
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        String[] parts = line.split(SP);
+        Key key = Key.get(parts[0]);
+        switch (key) {
+          case DIR_SOURCE:
+            this.parseDirSourceLine(line);
+            break;
+          case CONTACT:
+            this.parseContactLine(line);
+            break;
+          case VOTE_DIGEST:
+            this.parseVoteDigestLine(line);
+            break;
+          case CRYPTO_BEGIN:
+            skipCrypto = true;
+            break;
+          case CRYPTO_END:
+            skipCrypto = false;
+            break;
+          default:
+            if (!skipCrypto) {
+              if (this.unrecognizedLines == null) {
+                this.unrecognizedLines = new ArrayList<>();
+              }
+              this.unrecognizedLines.add(line);
             }
-            this.unrecognizedLines.add(line);
-          }
+        }
       }
     }
   }

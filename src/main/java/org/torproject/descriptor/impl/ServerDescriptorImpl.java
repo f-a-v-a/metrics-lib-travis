@@ -52,181 +52,182 @@ public abstract class ServerDescriptorImpl extends DescriptorImpl
   }
 
   private void parseDescriptorBytes() throws DescriptorParseException {
-    Scanner scanner = this.newScanner().useDelimiter(NL);
-    Key nextCrypto = Key.EMPTY;
-    List<String> cryptoLines = null;
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      if (line.startsWith("@")) {
-        continue;
-      }
-      String lineNoOpt = line.startsWith(Key.OPT.keyword + SP)
-          ? line.substring(Key.OPT.keyword.length() + 1) : line;
-      String[] partsNoOpt = lineNoOpt.split("[ \t]+");
-      Key key = Key.get(partsNoOpt[0]);
-      switch (key) {
-        case ROUTER:
-          this.parseRouterLine(line, partsNoOpt);
-          break;
-        case OR_ADDRESS:
-          this.parseOrAddressLine(line, partsNoOpt);
-          break;
-        case BANDWIDTH:
-          this.parseBandwidthLine(line, partsNoOpt);
-          break;
-        case PLATFORM:
-          this.parsePlatformLine(lineNoOpt);
-          break;
-        case PROTO:
-          this.parseProtoLine(line, lineNoOpt, partsNoOpt);
-          break;
-        case PUBLISHED:
-          this.parsePublishedLine(line, partsNoOpt);
-          break;
-        case FINGERPRINT:
-          this.parseFingerprintLine(line, lineNoOpt);
-          break;
-        case HIBERNATING:
-          this.parseHibernatingLine(line, partsNoOpt);
-          break;
-        case UPTIME:
-          this.parseUptimeLine(line, partsNoOpt);
-          break;
-        case ONION_KEY:
-          this.parseOnionKeyLine(line, lineNoOpt);
-          nextCrypto = key;
-          break;
-        case SIGNING_KEY:
-          this.parseSigningKeyLine(line, lineNoOpt);
-          nextCrypto = key;
-          break;
-        case ACCEPT:
-          this.parseAcceptLine(line, lineNoOpt, partsNoOpt);
-          break;
-        case REJECT:
-          this.parseRejectLine(line, lineNoOpt, partsNoOpt);
-          break;
-        case ROUTER_SIGNATURE:
-          this.parseRouterSignatureLine(line, lineNoOpt);
-          nextCrypto = key;
-          break;
-        case CONTACT:
-          this.parseContactLine(lineNoOpt);
-          break;
-        case FAMILY:
-          this.parseFamilyLine(line, partsNoOpt);
-          break;
-        case READ_HISTORY:
-          this.parseReadHistoryLine(line, partsNoOpt);
-          break;
-        case WRITE_HISTORY:
-          this.parseWriteHistoryLine(line, partsNoOpt);
-          break;
-        case EVENTDNS:
-          this.parseEventdnsLine(line, partsNoOpt);
-          break;
-        case CACHES_EXTRA_INFO:
-          this.parseCachesExtraInfoLine(line, lineNoOpt);
-          break;
-        case EXTRA_INFO_DIGEST:
-          this.parseExtraInfoDigestLine(line, partsNoOpt);
-          break;
-        case HIDDEN_SERVICE_DIR:
-          this.parseHiddenServiceDirLine();
-          break;
-        case PROTOCOLS:
-          this.parseProtocolsLine(line, partsNoOpt);
-          break;
-        case ALLOW_SINGLE_HOP_EXITS:
-          this.parseAllowSingleHopExitsLine(line, lineNoOpt);
-          break;
-        case DIRCACHEPORT:
-          this.parseDircacheportLine(line, partsNoOpt);
-          break;
-        case ROUTER_DIGEST:
-          this.parseRouterDigestLine(line, partsNoOpt);
-          break;
-        case ROUTER_DIGEST_SHA256:
-          this.parseRouterDigestSha256Line(line, partsNoOpt);
-          break;
-        case IPV6_POLICY:
-          this.parseIpv6PolicyLine(line, partsNoOpt);
-          break;
-        case NTOR_ONION_KEY:
-          this.parseNtorOnionKeyLine(line, partsNoOpt);
-          break;
-        case IDENTITY_ED25519:
-          this.parseIdentityEd25519Line(line, partsNoOpt);
-          nextCrypto = key;
-          break;
-        case MASTER_KEY_ED25519:
-          this.parseMasterKeyEd25519Line(line, partsNoOpt);
-          break;
-        case ROUTER_SIG_ED25519:
-          this.parseRouterSigEd25519Line(line, partsNoOpt);
-          break;
-        case ONION_KEY_CROSSCERT:
-          this.parseOnionKeyCrosscert(line, partsNoOpt);
-          nextCrypto = key;
-          break;
-        case NTOR_ONION_KEY_CROSSCERT:
-          this.parseNtorOnionKeyCrosscert(line, partsNoOpt);
-          nextCrypto = key;
-          break;
-        case TUNNELLED_DIR_SERVER:
-          this.parseTunnelledDirServerLine(line, lineNoOpt);
-          break;
-        case CRYPTO_BEGIN:
-          cryptoLines = new ArrayList<>();
-          cryptoLines.add(line);
-          break;
-        case CRYPTO_END:
-          cryptoLines.add(line);
-          StringBuilder sb = new StringBuilder();
-          for (String cryptoLine : cryptoLines) {
-            sb.append(NL).append(cryptoLine);
-          }
-          String cryptoString = sb.toString().substring(1);
-          switch (nextCrypto) {
-            case ONION_KEY:
-              this.onionKey = cryptoString;
-              break;
-            case SIGNING_KEY:
-              this.signingKey = cryptoString;
-              break;
-            case ROUTER_SIGNATURE:
-              this.routerSignature = cryptoString;
-              break;
-            case IDENTITY_ED25519:
-              this.identityEd25519 = cryptoString;
-              this.parseIdentityEd25519CryptoBlock(cryptoString);
-              break;
-            case ONION_KEY_CROSSCERT:
-              this.onionKeyCrosscert = cryptoString;
-              break;
-            case NTOR_ONION_KEY_CROSSCERT:
-              this.ntorOnionKeyCrosscert = cryptoString;
-              break;
-            default:
+    try (Scanner scanner = this.newScanner().useDelimiter(NL)) {
+      Key nextCrypto = Key.EMPTY;
+      List<String> cryptoLines = null;
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        if (line.startsWith("@")) {
+          continue;
+        }
+        String lineNoOpt = line.startsWith(Key.OPT.keyword + SP)
+                ? line.substring(Key.OPT.keyword.length() + 1) : line;
+        String[] partsNoOpt = lineNoOpt.split("[ \t]+");
+        Key key = Key.get(partsNoOpt[0]);
+        switch (key) {
+          case ROUTER:
+            this.parseRouterLine(line, partsNoOpt);
+            break;
+          case OR_ADDRESS:
+            this.parseOrAddressLine(line, partsNoOpt);
+            break;
+          case BANDWIDTH:
+            this.parseBandwidthLine(line, partsNoOpt);
+            break;
+          case PLATFORM:
+            this.parsePlatformLine(lineNoOpt);
+            break;
+          case PROTO:
+            this.parseProtoLine(line, lineNoOpt, partsNoOpt);
+            break;
+          case PUBLISHED:
+            this.parsePublishedLine(line, partsNoOpt);
+            break;
+          case FINGERPRINT:
+            this.parseFingerprintLine(line, lineNoOpt);
+            break;
+          case HIBERNATING:
+            this.parseHibernatingLine(line, partsNoOpt);
+            break;
+          case UPTIME:
+            this.parseUptimeLine(line, partsNoOpt);
+            break;
+          case ONION_KEY:
+            this.parseOnionKeyLine(line, lineNoOpt);
+            nextCrypto = key;
+            break;
+          case SIGNING_KEY:
+            this.parseSigningKeyLine(line, lineNoOpt);
+            nextCrypto = key;
+            break;
+          case ACCEPT:
+            this.parseAcceptLine(line, lineNoOpt, partsNoOpt);
+            break;
+          case REJECT:
+            this.parseRejectLine(line, lineNoOpt, partsNoOpt);
+            break;
+          case ROUTER_SIGNATURE:
+            this.parseRouterSignatureLine(line, lineNoOpt);
+            nextCrypto = key;
+            break;
+          case CONTACT:
+            this.parseContactLine(lineNoOpt);
+            break;
+          case FAMILY:
+            this.parseFamilyLine(line, partsNoOpt);
+            break;
+          case READ_HISTORY:
+            this.parseReadHistoryLine(line, partsNoOpt);
+            break;
+          case WRITE_HISTORY:
+            this.parseWriteHistoryLine(line, partsNoOpt);
+            break;
+          case EVENTDNS:
+            this.parseEventdnsLine(line, partsNoOpt);
+            break;
+          case CACHES_EXTRA_INFO:
+            this.parseCachesExtraInfoLine(line, lineNoOpt);
+            break;
+          case EXTRA_INFO_DIGEST:
+            this.parseExtraInfoDigestLine(line, partsNoOpt);
+            break;
+          case HIDDEN_SERVICE_DIR:
+            this.parseHiddenServiceDirLine();
+            break;
+          case PROTOCOLS:
+            this.parseProtocolsLine(line, partsNoOpt);
+            break;
+          case ALLOW_SINGLE_HOP_EXITS:
+            this.parseAllowSingleHopExitsLine(line, lineNoOpt);
+            break;
+          case DIRCACHEPORT:
+            this.parseDircacheportLine(line, partsNoOpt);
+            break;
+          case ROUTER_DIGEST:
+            this.parseRouterDigestLine(line, partsNoOpt);
+            break;
+          case ROUTER_DIGEST_SHA256:
+            this.parseRouterDigestSha256Line(line, partsNoOpt);
+            break;
+          case IPV6_POLICY:
+            this.parseIpv6PolicyLine(line, partsNoOpt);
+            break;
+          case NTOR_ONION_KEY:
+            this.parseNtorOnionKeyLine(line, partsNoOpt);
+            break;
+          case IDENTITY_ED25519:
+            this.parseIdentityEd25519Line(line, partsNoOpt);
+            nextCrypto = key;
+            break;
+          case MASTER_KEY_ED25519:
+            this.parseMasterKeyEd25519Line(line, partsNoOpt);
+            break;
+          case ROUTER_SIG_ED25519:
+            this.parseRouterSigEd25519Line(line, partsNoOpt);
+            break;
+          case ONION_KEY_CROSSCERT:
+            this.parseOnionKeyCrosscert(line, partsNoOpt);
+            nextCrypto = key;
+            break;
+          case NTOR_ONION_KEY_CROSSCERT:
+            this.parseNtorOnionKeyCrosscert(line, partsNoOpt);
+            nextCrypto = key;
+            break;
+          case TUNNELLED_DIR_SERVER:
+            this.parseTunnelledDirServerLine(line, lineNoOpt);
+            break;
+          case CRYPTO_BEGIN:
+            cryptoLines = new ArrayList<>();
+            cryptoLines.add(line);
+            break;
+          case CRYPTO_END:
+            cryptoLines.add(line);
+            StringBuilder sb = new StringBuilder();
+            for (String cryptoLine : cryptoLines) {
+              sb.append(NL).append(cryptoLine);
+            }
+            String cryptoString = sb.toString().substring(1);
+            switch (nextCrypto) {
+              case ONION_KEY:
+                this.onionKey = cryptoString;
+                break;
+              case SIGNING_KEY:
+                this.signingKey = cryptoString;
+                break;
+              case ROUTER_SIGNATURE:
+                this.routerSignature = cryptoString;
+                break;
+              case IDENTITY_ED25519:
+                this.identityEd25519 = cryptoString;
+                this.parseIdentityEd25519CryptoBlock(cryptoString);
+                break;
+              case ONION_KEY_CROSSCERT:
+                this.onionKeyCrosscert = cryptoString;
+                break;
+              case NTOR_ONION_KEY_CROSSCERT:
+                this.ntorOnionKeyCrosscert = cryptoString;
+                break;
+              default:
+                if (this.unrecognizedLines == null) {
+                  this.unrecognizedLines = new ArrayList<>();
+                }
+                this.unrecognizedLines.addAll(cryptoLines);
+            }
+            cryptoLines = null;
+            nextCrypto = Key.EMPTY;
+            break;
+          case INVALID:
+          default:
+            if (cryptoLines != null) {
+              cryptoLines.add(line);
+            } else {
+              ParseHelper.parseKeyword(line, partsNoOpt[0]);
               if (this.unrecognizedLines == null) {
                 this.unrecognizedLines = new ArrayList<>();
               }
-              this.unrecognizedLines.addAll(cryptoLines);
-          }
-          cryptoLines = null;
-          nextCrypto = Key.EMPTY;
-          break;
-        case INVALID:
-        default:
-          if (cryptoLines != null) {
-            cryptoLines.add(line);
-          } else {
-            ParseHelper.parseKeyword(line, partsNoOpt[0]);
-            if (this.unrecognizedLines == null) {
-              this.unrecognizedLines = new ArrayList<>();
+              this.unrecognizedLines.add(line);
             }
-            this.unrecognizedLines.add(line);
-          }
+        }
       }
     }
   }

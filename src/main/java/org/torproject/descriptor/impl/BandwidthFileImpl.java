@@ -47,23 +47,24 @@ public class BandwidthFileImpl extends DescriptorImpl implements BandwidthFile {
       throws DescriptorParseException {
     super(rawDescriptorBytes, new int[] { 0, rawDescriptorBytes.length },
         descriptorfile, false);
-    Scanner scanner = this.newScanner().useDelimiter("\n");
-    this.parseTimestampLine(scanner.nextLine());
-    boolean haveFinishedParsingHeader = false;
-    while (scanner.hasNext()) {
-      String line = scanner.nextLine();
-      if (!haveFinishedParsingHeader) {
-        if (line.startsWith("bw=") || line.contains(" bw=")) {
-          haveFinishedParsingHeader = true;
-        } else if ("====".equals(line) || "=====".equals(line)) {
-          haveFinishedParsingHeader = true;
-          continue;
+    try (Scanner scanner = this.newScanner().useDelimiter("\n")) {
+      this.parseTimestampLine(scanner.nextLine());
+      boolean haveFinishedParsingHeader = false;
+      while (scanner.hasNext()) {
+        String line = scanner.nextLine();
+        if (!haveFinishedParsingHeader) {
+          if (line.startsWith("bw=") || line.contains(" bw=")) {
+            haveFinishedParsingHeader = true;
+          } else if ("====".equals(line) || "=====".equals(line)) {
+            haveFinishedParsingHeader = true;
+            continue;
+          }
         }
-      }
-      if (!haveFinishedParsingHeader) {
-        this.parseHeaderLine(line);
-      } else {
-        this.parseRelayLine(line);
+        if (!haveFinishedParsingHeader) {
+          this.parseHeaderLine(line);
+        } else {
+          this.parseRelayLine(line);
+        }
       }
     }
   }
