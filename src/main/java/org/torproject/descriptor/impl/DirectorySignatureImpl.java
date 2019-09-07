@@ -39,51 +39,52 @@ public class DirectorySignatureImpl implements DirectorySignature {
 
   private void parseDirectorySignatureBytes()
       throws DescriptorParseException {
-    Scanner scanner = this.parent.newScanner(this.offset, this.length)
-        .useDelimiter(NL);
-    StringBuilder crypto = null;
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      String[] parts = line.split(SP, -1);
-      Key key = Key.get(parts[0]);
-      switch (key) {
-        case DIRECTORY_SIGNATURE:
-          int algorithmOffset = 0;
-          switch (parts.length) {
-            case 4:
-              this.algorithm = parts[1];
-              algorithmOffset = 1;
-              break;
-            case 3:
-              break;
-            default:
-              throw new DescriptorParseException("Illegal line '" + line
-                  + "'.");
-          }
-          this.identity = ParseHelper.parseHexString(line,
-              parts[1 + algorithmOffset]);
-          this.signingKeyDigest = ParseHelper.parseHexString(
-              line, parts[2 + algorithmOffset]);
-          break;
-        case CRYPTO_BEGIN:
-          crypto = new StringBuilder();
-          crypto.append(line).append(NL);
-          break;
-        case CRYPTO_END:
-          crypto.append(line).append(NL);
-          String cryptoString = crypto.toString();
-          crypto = null;
-          this.signature = cryptoString;
-          break;
-        default:
-          if (crypto != null) {
-            crypto.append(line).append(NL);
-          } else {
-            if (this.unrecognizedLines == null) {
-              this.unrecognizedLines = new ArrayList<>();
+    try (Scanner scanner = this.parent.newScanner(this.offset, this.length)
+        .useDelimiter(NL)) {
+      StringBuilder crypto = null;
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        String[] parts = line.split(SP, -1);
+        Key key = Key.get(parts[0]);
+        switch (key) {
+          case DIRECTORY_SIGNATURE:
+            int algorithmOffset = 0;
+            switch (parts.length) {
+              case 4:
+                this.algorithm = parts[1];
+                algorithmOffset = 1;
+                break;
+              case 3:
+                break;
+              default:
+                throw new DescriptorParseException("Illegal line '" + line
+                        + "'.");
             }
-            this.unrecognizedLines.add(line);
-          }
+            this.identity = ParseHelper.parseHexString(line,
+                    parts[1 + algorithmOffset]);
+            this.signingKeyDigest = ParseHelper.parseHexString(
+                    line, parts[2 + algorithmOffset]);
+            break;
+          case CRYPTO_BEGIN:
+            crypto = new StringBuilder();
+            crypto.append(line).append(NL);
+            break;
+          case CRYPTO_END:
+            crypto.append(line).append(NL);
+            String cryptoString = crypto.toString();
+            crypto = null;
+            this.signature = cryptoString;
+            break;
+          default:
+            if (crypto != null) {
+              crypto.append(line).append(NL);
+            } else {
+              if (this.unrecognizedLines == null) {
+                this.unrecognizedLines = new ArrayList<>();
+              }
+              this.unrecognizedLines.add(line);
+            }
+        }
       }
     }
   }
