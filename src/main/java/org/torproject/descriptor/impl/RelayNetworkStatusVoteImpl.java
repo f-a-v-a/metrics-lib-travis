@@ -66,157 +66,158 @@ public class RelayNetworkStatusVoteImpl extends NetworkStatusImpl
     this.enoughMtbfInfo = -1;
     this.ignoringAdvertisedBws = -1;
 
-    Scanner scanner = this.newScanner(offset, length).useDelimiter(NL);
-    Key nextCrypto = Key.EMPTY;
-    StringBuilder crypto = null;
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      String[] parts = line.split("[ \t]+");
-      Key key = Key.get(parts[0]);
-      switch (key) {
-        case NETWORK_STATUS_VERSION:
-          this.parseNetworkStatusVersionLine(line);
-          break;
-        case VOTE_STATUS:
-          this.parseVoteStatusLine(line, parts);
-          break;
-        case CONSENSUS_METHODS:
-          this.parseConsensusMethodsLine(line, parts);
-          break;
-        case PUBLISHED:
-          this.parsePublishedLine(line, parts);
-          break;
-        case VALID_AFTER:
-          this.parseValidAfterLine(line, parts);
-          break;
-        case FRESH_UNTIL:
-          this.parseFreshUntilLine(line, parts);
-          break;
-        case VALID_UNTIL:
-          this.parseValidUntilLine(line, parts);
-          break;
-        case VOTING_DELAY:
-          this.parseVotingDelayLine(line, parts);
-          break;
-        case CLIENT_VERSIONS:
-          this.parseClientVersionsLine(line, parts);
-          break;
-        case SERVER_VERSIONS:
-          this.parseServerVersionsLine(line, parts);
-          break;
-        case RECOMMENDED_CLIENT_PROTOCOLS:
-          this.parseRecommendedClientProtocolsLine(line, parts);
-          break;
-        case RECOMMENDED_RELAY_PROTOCOLS:
-          this.parseRecommendedRelayProtocolsLine(line, parts);
-          break;
-        case REQUIRED_CLIENT_PROTOCOLS:
-          this.parseRequiredClientProtocolsLine(line, parts);
-          break;
-        case REQUIRED_RELAY_PROTOCOLS:
-          this.parseRequiredRelayProtocolsLine(line, parts);
-          break;
-        case PACKAGE:
-          this.parsePackageLine(line, parts);
-          break;
-        case KNOWN_FLAGS:
-          this.parseKnownFlagsLine(line, parts);
-          break;
-        case FLAG_THRESHOLDS:
-          this.parseFlagThresholdsLine(line, parts);
-          break;
-        case PARAMS:
-          this.parseParamsLine(line, parts);
-          break;
-        case DIR_SOURCE:
-          this.parseDirSourceLine(line, parts);
-          break;
-        case CONTACT:
-          this.parseContactLine(line);
-          break;
-        case SHARED_RAND_PARTICIPATE:
-          this.parseSharedRandParticipateLine(line, parts);
-          break;
-        case SHARED_RAND_COMMIT:
-          this.parseSharedRandCommitLine(line);
-          break;
-        case SHARED_RAND_PREVIOUS_VALUE:
-          this.parseSharedRandPreviousValueLine(line, parts);
-          break;
-        case SHARED_RAND_CURRENT_VALUE:
-          this.parseSharedRandCurrentValueLine(line, parts);
-          break;
-        case DIR_KEY_CERTIFICATE_VERSION:
-          this.parseDirKeyCertificateVersionLine(line, parts);
-          break;
-        case DIR_ADDRESS:
-          /* Nothing new to learn here.  Also, this line hasn't been observed
-           * "in the wild" yet.  Maybe it's just an urban legend. */
-          break;
-        case FINGERPRINT:
-          this.parseFingerprintLine(line, parts);
-          break;
-        case LEGACY_DIR_KEY:
-          this.parseLegacyDirKeyLine(line, parts);
-          break;
-        case DIR_KEY_PUBLISHED:
-          this.parseDirKeyPublished(line, parts);
-          break;
-        case DIR_KEY_EXPIRES:
-          this.parseDirKeyExpiresLine(line, parts);
-          break;
-        case DIR_IDENTITY_KEY:
-          this.parseDirIdentityKeyLine(line);
-          nextCrypto = key;
-          break;
-        case DIR_SIGNING_KEY:
-          this.parseDirSigningKeyLine(line);
-          nextCrypto = key;
-          break;
-        case DIR_KEY_CROSSCERT:
-          this.parseDirKeyCrosscertLine(line);
-          nextCrypto = key;
-          break;
-        case DIR_KEY_CERTIFICATION:
-          this.parseDirKeyCertificationLine(line);
-          nextCrypto = key;
-          break;
-        case CRYPTO_BEGIN:
-          crypto = new StringBuilder();
-          crypto.append(line).append(NL);
-          break;
-        case CRYPTO_END:
-          crypto.append(line).append(NL);
-          String cryptoString = crypto.toString();
-          crypto = null;
-          switch (nextCrypto) {
-            case DIR_IDENTITY_KEY:
-              this.dirIdentityKey = cryptoString;
-              break;
-            case DIR_SIGNING_KEY:
-              this.dirSigningKey = cryptoString;
-              break;
-            case DIR_KEY_CROSSCERT:
-              this.dirKeyCrosscert = cryptoString;
-              break;
-            case DIR_KEY_CERTIFICATION:
-              this.dirKeyCertification = cryptoString;
-              break;
-            default:
-              throw new DescriptorParseException("Unrecognized crypto "
-                  + "block in vote.");
-          }
-          nextCrypto = Key.EMPTY;
-          break;
-        default:
-          if (crypto != null) {
+    try (Scanner scanner = this.newScanner(offset, length).useDelimiter(NL)) {
+      Key nextCrypto = Key.EMPTY;
+      StringBuilder crypto = null;
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        String[] parts = line.split("[ \t]+");
+        Key key = Key.get(parts[0]);
+        switch (key) {
+          case NETWORK_STATUS_VERSION:
+            this.parseNetworkStatusVersionLine(line);
+            break;
+          case VOTE_STATUS:
+            this.parseVoteStatusLine(line, parts);
+            break;
+          case CONSENSUS_METHODS:
+            this.parseConsensusMethodsLine(line, parts);
+            break;
+          case PUBLISHED:
+            this.parsePublishedLine(line, parts);
+            break;
+          case VALID_AFTER:
+            this.parseValidAfterLine(line, parts);
+            break;
+          case FRESH_UNTIL:
+            this.parseFreshUntilLine(line, parts);
+            break;
+          case VALID_UNTIL:
+            this.parseValidUntilLine(line, parts);
+            break;
+          case VOTING_DELAY:
+            this.parseVotingDelayLine(line, parts);
+            break;
+          case CLIENT_VERSIONS:
+            this.parseClientVersionsLine(line, parts);
+            break;
+          case SERVER_VERSIONS:
+            this.parseServerVersionsLine(line, parts);
+            break;
+          case RECOMMENDED_CLIENT_PROTOCOLS:
+            this.parseRecommendedClientProtocolsLine(line, parts);
+            break;
+          case RECOMMENDED_RELAY_PROTOCOLS:
+            this.parseRecommendedRelayProtocolsLine(line, parts);
+            break;
+          case REQUIRED_CLIENT_PROTOCOLS:
+            this.parseRequiredClientProtocolsLine(line, parts);
+            break;
+          case REQUIRED_RELAY_PROTOCOLS:
+            this.parseRequiredRelayProtocolsLine(line, parts);
+            break;
+          case PACKAGE:
+            this.parsePackageLine(line, parts);
+            break;
+          case KNOWN_FLAGS:
+            this.parseKnownFlagsLine(line, parts);
+            break;
+          case FLAG_THRESHOLDS:
+            this.parseFlagThresholdsLine(line, parts);
+            break;
+          case PARAMS:
+            this.parseParamsLine(line, parts);
+            break;
+          case DIR_SOURCE:
+            this.parseDirSourceLine(line, parts);
+            break;
+          case CONTACT:
+            this.parseContactLine(line);
+            break;
+          case SHARED_RAND_PARTICIPATE:
+            this.parseSharedRandParticipateLine(line, parts);
+            break;
+          case SHARED_RAND_COMMIT:
+            this.parseSharedRandCommitLine(line);
+            break;
+          case SHARED_RAND_PREVIOUS_VALUE:
+            this.parseSharedRandPreviousValueLine(line, parts);
+            break;
+          case SHARED_RAND_CURRENT_VALUE:
+            this.parseSharedRandCurrentValueLine(line, parts);
+            break;
+          case DIR_KEY_CERTIFICATE_VERSION:
+            this.parseDirKeyCertificateVersionLine(line, parts);
+            break;
+          case DIR_ADDRESS:
+            /* Nothing new to learn here.  Also, this line hasn't been observed
+             * "in the wild" yet.  Maybe it's just an urban legend. */
+            break;
+          case FINGERPRINT:
+            this.parseFingerprintLine(line, parts);
+            break;
+          case LEGACY_DIR_KEY:
+            this.parseLegacyDirKeyLine(line, parts);
+            break;
+          case DIR_KEY_PUBLISHED:
+            this.parseDirKeyPublished(line, parts);
+            break;
+          case DIR_KEY_EXPIRES:
+            this.parseDirKeyExpiresLine(line, parts);
+            break;
+          case DIR_IDENTITY_KEY:
+            this.parseDirIdentityKeyLine(line);
+            nextCrypto = key;
+            break;
+          case DIR_SIGNING_KEY:
+            this.parseDirSigningKeyLine(line);
+            nextCrypto = key;
+            break;
+          case DIR_KEY_CROSSCERT:
+            this.parseDirKeyCrosscertLine(line);
+            nextCrypto = key;
+            break;
+          case DIR_KEY_CERTIFICATION:
+            this.parseDirKeyCertificationLine(line);
+            nextCrypto = key;
+            break;
+          case CRYPTO_BEGIN:
+            crypto = new StringBuilder();
             crypto.append(line).append(NL);
-          } else {
-            if (this.unrecognizedLines == null) {
-              this.unrecognizedLines = new ArrayList<>();
+            break;
+          case CRYPTO_END:
+            crypto.append(line).append(NL);
+            String cryptoString = crypto.toString();
+            crypto = null;
+            switch (nextCrypto) {
+              case DIR_IDENTITY_KEY:
+                this.dirIdentityKey = cryptoString;
+                break;
+              case DIR_SIGNING_KEY:
+                this.dirSigningKey = cryptoString;
+                break;
+              case DIR_KEY_CROSSCERT:
+                this.dirKeyCrosscert = cryptoString;
+                break;
+              case DIR_KEY_CERTIFICATION:
+                this.dirKeyCertification = cryptoString;
+                break;
+              default:
+                throw new DescriptorParseException("Unrecognized crypto "
+                        + "block in vote.");
             }
-            this.unrecognizedLines.add(line);
-          }
+            nextCrypto = Key.EMPTY;
+            break;
+          default:
+            if (crypto != null) {
+              crypto.append(line).append(NL);
+            } else {
+              if (this.unrecognizedLines == null) {
+                this.unrecognizedLines = new ArrayList<>();
+              }
+              this.unrecognizedLines.add(line);
+            }
+        }
       }
     }
   }
@@ -568,14 +569,15 @@ public class RelayNetworkStatusVoteImpl extends NetworkStatusImpl
   }
 
   protected void parseFooter(int offset, int length) {
-    Scanner scanner = this.newScanner(offset, length).useDelimiter(NL);
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      if (!line.equals(Key.DIRECTORY_FOOTER.keyword)) {
-        if (this.unrecognizedLines == null) {
-          this.unrecognizedLines = new ArrayList<>();
+    try (Scanner scanner = this.newScanner(offset, length).useDelimiter(NL)) {
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        if (!line.equals(Key.DIRECTORY_FOOTER.keyword)) {
+          if (this.unrecognizedLines == null) {
+            this.unrecognizedLines = new ArrayList<>();
+          }
+          this.unrecognizedLines.add(line);
         }
-        this.unrecognizedLines.add(line);
       }
     }
   }
