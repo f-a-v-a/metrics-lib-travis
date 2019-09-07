@@ -79,107 +79,111 @@ public class RelayDirectoryImpl extends DescriptorImpl
 
   private void parseHeader(int offset, int length)
       throws DescriptorParseException {
-    Scanner scanner = this.newScanner(offset, length).useDelimiter(NL);
-    String publishedLine = null;
-    Key nextCrypto = Key.EMPTY;
-    String runningRoutersLine = null;
-    String routerStatusLine = null;
-    StringBuilder crypto = null;
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      if (line.isEmpty() || line.startsWith("@")) {
-        continue;
-      }
-      String lineNoOpt = line.startsWith(Key.OPT.keyword + SP)
-          ? line.substring(Key.OPT.keyword.length() + 1) : line;
-      String[] partsNoOpt = lineNoOpt.split("[ \t]+");
-      Key key = Key.get(partsNoOpt[0]);
-      switch (key) {
-        case SIGNED_DIRECTORY:
-          this.parseSignedDirectoryLine(line, lineNoOpt);
-          break;
-        case PUBLISHED:
-          if (publishedLine != null) {
-            throw new DescriptorParseException("Keyword 'published' is "
-                + "contained more than once, but must be contained "
-                + "exactly once.");
-          } else {
-            publishedLine = line;
-          }
-          break;
-        case DIR_SIGNING_KEY:
-          this.parseDirSigningKeyLine(line, partsNoOpt);
-          nextCrypto = key;
-          break;
-        case RECOMMENDED_SOFTWARE:
-          this.parseRecommendedSoftwareLine(line, partsNoOpt);
-          break;
-        case RUNNING_ROUTERS:
-          runningRoutersLine = line;
-          break;
-        case ROUTER_STATUS:
-          routerStatusLine = line;
-          break;
-        case CRYPTO_BEGIN:
-          crypto = new StringBuilder();
-          crypto.append(line).append(NL);
-          break;
-        case CRYPTO_END:
-          crypto.append(line).append(NL);
-          String cryptoString = crypto.toString();
-          crypto = null;
-          if (nextCrypto.equals(Key.DIR_SIGNING_KEY)
-              && this.dirSigningKey == null) {
-            this.dirSigningKey = cryptoString;
-          } else {
-            throw new DescriptorParseException("Unrecognized crypto "
-                + "block in v1 directory.");
-          }
-          nextCrypto = Key.EMPTY;
-          break;
-        default:
-          if (crypto != null) {
-            crypto.append(line).append(NL);
-          } else {
-            if (this.unrecognizedLines == null) {
-              this.unrecognizedLines = new ArrayList<>();
+    try (Scanner scanner = this.newScanner(offset, length).useDelimiter(NL)) {
+      String publishedLine = null;
+      Key nextCrypto = Key.EMPTY;
+      String runningRoutersLine = null;
+      String routerStatusLine = null;
+      StringBuilder crypto = null;
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        if (line.isEmpty() || line.startsWith("@")) {
+          continue;
+        }
+        String lineNoOpt = line.startsWith(Key.OPT.keyword + SP)
+                ? line.substring(Key.OPT.keyword.length() + 1) : line;
+        String[] partsNoOpt = lineNoOpt.split("[ \t]+");
+        Key key = Key.get(partsNoOpt[0]);
+        switch (key) {
+          case SIGNED_DIRECTORY:
+            this.parseSignedDirectoryLine(line, lineNoOpt);
+            break;
+          case PUBLISHED:
+            if (publishedLine != null) {
+              throw new DescriptorParseException("Keyword 'published' is "
+                      + "contained more than once, but must be contained "
+                      + "exactly once.");
+            } else {
+              publishedLine = line;
             }
-            this.unrecognizedLines.add(line);
-          }
+            break;
+          case DIR_SIGNING_KEY:
+            this.parseDirSigningKeyLine(line, partsNoOpt);
+            nextCrypto = key;
+            break;
+          case RECOMMENDED_SOFTWARE:
+            this.parseRecommendedSoftwareLine(line, partsNoOpt);
+            break;
+          case RUNNING_ROUTERS:
+            runningRoutersLine = line;
+            break;
+          case ROUTER_STATUS:
+            routerStatusLine = line;
+            break;
+          case CRYPTO_BEGIN:
+            crypto = new StringBuilder();
+            crypto.append(line).append(NL);
+            break;
+          case CRYPTO_END:
+            crypto.append(line).append(NL);
+            String cryptoString = crypto.toString();
+            crypto = null;
+            if (nextCrypto.equals(Key.DIR_SIGNING_KEY)
+                    && this.dirSigningKey == null) {
+              this.dirSigningKey = cryptoString;
+            } else {
+              throw new DescriptorParseException("Unrecognized crypto "
+                      + "block in v1 directory.");
+            }
+            nextCrypto = Key.EMPTY;
+            break;
+          default:
+            if (crypto != null) {
+              crypto.append(line).append(NL);
+            } else {
+              if (this.unrecognizedLines == null) {
+                this.unrecognizedLines = new ArrayList<>();
+              }
+              this.unrecognizedLines.add(line);
+            }
+        }
       }
-    }
-    if (publishedLine == null) {
-      throw new DescriptorParseException("Keyword 'published' is "
-          + "contained 0 times, but must be contained exactly once.");
-    } else {
-      String publishedLineNoOpt = publishedLine.startsWith(Key.OPT.keyword + SP)
-          ? publishedLine.substring(Key.OPT.keyword.length() + 1)
-          : publishedLine;
-      String[] publishedPartsNoOpt = publishedLineNoOpt.split("[ \t]+");
-      this.parsePublishedLine(publishedLine,
-          publishedPartsNoOpt);
-    }
-    if (routerStatusLine != null) {
-      String routerStatusLineNoOpt =
-          routerStatusLine.startsWith(Key.OPT.keyword + SP)
-          ? routerStatusLine.substring(Key.OPT.keyword.length() + 1)
-          : routerStatusLine;
-      String[] routerStatusPartsNoOpt =
-          routerStatusLineNoOpt.split("[ \t]+");
-      this.parseRouterStatusLine(
-          routerStatusPartsNoOpt);
-    } else if (runningRoutersLine != null) {
-      String runningRoutersLineNoOpt =
-          runningRoutersLine.startsWith(Key.OPT.keyword + SP)
-          ? runningRoutersLine.substring(Key.OPT.keyword.length() + 1)
-          : runningRoutersLine;
-      String[] runningRoutersPartsNoOpt =
-          runningRoutersLineNoOpt.split("[ \t]+");
-      this.parseRunningRoutersLine(
-          runningRoutersPartsNoOpt);
-    } else {
-      throw new DescriptorParseException("Either running-routers or "
-          + "router-status line must be given.");
+      if (publishedLine == null) {
+        throw new DescriptorParseException("Keyword 'published' is "
+                + "contained 0 times, but must be contained exactly once.");
+      } else {
+        String publishedLineNoOpt = publishedLine.startsWith(Key.OPT.keyword
+                + SP)
+                ? publishedLine.substring(Key.OPT.keyword.length() + 1)
+                : publishedLine;
+        String[] publishedPartsNoOpt = publishedLineNoOpt.split("[ \t]+");
+        this.parsePublishedLine(publishedLine,
+                publishedPartsNoOpt);
+      }
+      if (routerStatusLine != null) {
+        String routerStatusLineNoOpt =
+                routerStatusLine.startsWith(Key.OPT.keyword + SP)
+                        ? routerStatusLine.substring(Key.OPT.keyword.length()
+                        + 1)
+                        : routerStatusLine;
+        String[] routerStatusPartsNoOpt =
+                routerStatusLineNoOpt.split("[ \t]+");
+        this.parseRouterStatusLine(
+                routerStatusPartsNoOpt);
+      } else if (runningRoutersLine != null) {
+        String runningRoutersLineNoOpt =
+                runningRoutersLine.startsWith(Key.OPT.keyword + SP)
+                        ? runningRoutersLine.substring(Key.OPT.keyword.length()
+                        + 1)
+                        : runningRoutersLine;
+        String[] runningRoutersPartsNoOpt =
+                runningRoutersLineNoOpt.split("[ \t]+");
+        this.parseRunningRoutersLine(
+                runningRoutersPartsNoOpt);
+      } else {
+        throw new DescriptorParseException("Either running-routers or "
+                + "router-status line must be given.");
+      }
     }
   }
 
@@ -196,45 +200,46 @@ public class RelayDirectoryImpl extends DescriptorImpl
 
   private void parseDirectorySignature(int offset, int length)
       throws DescriptorParseException {
-    Scanner scanner = this.newScanner(offset, length).useDelimiter(NL);
-    Key nextCrypto = Key.EMPTY;
-    StringBuilder crypto = null;
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      String lineNoOpt = line.startsWith(Key.OPT.keyword + SP)
-          ? line.substring(Key.OPT.keyword.length() + 1) : line;
-      String[] partsNoOpt = lineNoOpt.split("[ \t]+");
-      Key key = Key.get(partsNoOpt[0]);
-      switch (key) {
-        case DIRECTORY_SIGNATURE:
-          this.parseDirectorySignatureLine(line, partsNoOpt);
-          nextCrypto = key;
-          break;
-        case CRYPTO_BEGIN:
-          crypto = new StringBuilder();
-          crypto.append(line).append(NL);
-          break;
-        case CRYPTO_END:
-          crypto.append(line).append(NL);
-          String cryptoString = crypto.toString();
-          crypto = null;
-          if (nextCrypto.equals(Key.DIRECTORY_SIGNATURE)) {
-            this.directorySignature = cryptoString;
-          } else {
-            throw new DescriptorParseException("Unrecognized crypto "
-                + "block in v2 network status.");
-          }
-          nextCrypto = Key.EMPTY;
-          break;
-        default:
-          if (crypto != null) {
+    try (Scanner scanner = this.newScanner(offset, length).useDelimiter(NL)) {
+      Key nextCrypto = Key.EMPTY;
+      StringBuilder crypto = null;
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        String lineNoOpt = line.startsWith(Key.OPT.keyword + SP)
+                ? line.substring(Key.OPT.keyword.length() + 1) : line;
+        String[] partsNoOpt = lineNoOpt.split("[ \t]+");
+        Key key = Key.get(partsNoOpt[0]);
+        switch (key) {
+          case DIRECTORY_SIGNATURE:
+            this.parseDirectorySignatureLine(line, partsNoOpt);
+            nextCrypto = key;
+            break;
+          case CRYPTO_BEGIN:
+            crypto = new StringBuilder();
             crypto.append(line).append(NL);
-          } else {
-            if (this.unrecognizedLines == null) {
-              this.unrecognizedLines = new ArrayList<>();
+            break;
+          case CRYPTO_END:
+            crypto.append(line).append(NL);
+            String cryptoString = crypto.toString();
+            crypto = null;
+            if (nextCrypto.equals(Key.DIRECTORY_SIGNATURE)) {
+              this.directorySignature = cryptoString;
+            } else {
+              throw new DescriptorParseException("Unrecognized crypto "
+                      + "block in v2 network status.");
             }
-            this.unrecognizedLines.add(line);
-          }
+            nextCrypto = Key.EMPTY;
+            break;
+          default:
+            if (crypto != null) {
+              crypto.append(line).append(NL);
+            } else {
+              if (this.unrecognizedLines == null) {
+                this.unrecognizedLines = new ArrayList<>();
+              }
+              this.unrecognizedLines.add(line);
+            }
+        }
       }
     }
   }
