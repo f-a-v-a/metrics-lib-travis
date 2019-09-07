@@ -45,71 +45,72 @@ public class RelayNetworkStatusConsensusImpl extends NetworkStatusImpl
 
   protected void parseHeader(int offset, int length)
       throws DescriptorParseException {
-    Scanner scanner = this.newScanner(offset, length).useDelimiter(NL);
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      String[] parts = line.split("[ \t]+");
-      Key key = Key.get(parts[0]);
-      switch (key) {
-        case NETWORK_STATUS_VERSION:
-          this.parseNetworkStatusVersionLine(line, parts);
-          break;
-        case VOTE_STATUS:
-          this.parseVoteStatusLine(line, parts);
-          break;
-        case CONSENSUS_METHOD:
-          this.parseConsensusMethodLine(line, parts);
-          break;
-        case VALID_AFTER:
-          this.parseValidAfterLine(line, parts);
-          break;
-        case FRESH_UNTIL:
-          this.parseFreshUntilLine(line, parts);
-          break;
-        case VALID_UNTIL:
-          this.parseValidUntilLine(line, parts);
-          break;
-        case VOTING_DELAY:
-          this.parseVotingDelayLine(line, parts);
-          break;
-        case CLIENT_VERSIONS:
-          this.parseClientVersionsLine(line, parts);
-          break;
-        case SERVER_VERSIONS:
-          this.parseServerVersionsLine(line, parts);
-          break;
-        case RECOMMENDED_CLIENT_PROTOCOLS:
-          this.parseRecommendedClientProtocolsLine(line, parts);
-          break;
-        case RECOMMENDED_RELAY_PROTOCOLS:
-          this.parseRecommendedRelayProtocolsLine(line, parts);
-          break;
-        case REQUIRED_CLIENT_PROTOCOLS:
-          this.parseRequiredClientProtocolsLine(line, parts);
-          break;
-        case REQUIRED_RELAY_PROTOCOLS:
-          this.parseRequiredRelayProtocolsLine(line, parts);
-          break;
-        case PACKAGE:
-          this.parsePackageLine(line, parts);
-          break;
-        case KNOWN_FLAGS:
-          this.parseKnownFlagsLine(line, parts);
-          break;
-        case PARAMS:
-          this.parseParamsLine(line, parts);
-          break;
-        case SHARED_RAND_PREVIOUS_VALUE:
-          this.parseSharedRandPreviousValueLine(line, parts);
-          break;
-        case SHARED_RAND_CURRENT_VALUE:
-          this.parseSharedRandCurrentValueLine(line, parts);
-          break;
-        default:
-          if (this.unrecognizedLines == null) {
-            this.unrecognizedLines = new ArrayList<>();
-          }
-          this.unrecognizedLines.add(line);
+    try (Scanner scanner = this.newScanner(offset, length).useDelimiter(NL)) {
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        String[] parts = line.split("[ \t]+");
+        Key key = Key.get(parts[0]);
+        switch (key) {
+          case NETWORK_STATUS_VERSION:
+            this.parseNetworkStatusVersionLine(line, parts);
+            break;
+          case VOTE_STATUS:
+            this.parseVoteStatusLine(line, parts);
+            break;
+          case CONSENSUS_METHOD:
+            this.parseConsensusMethodLine(line, parts);
+            break;
+          case VALID_AFTER:
+            this.parseValidAfterLine(line, parts);
+            break;
+          case FRESH_UNTIL:
+            this.parseFreshUntilLine(line, parts);
+            break;
+          case VALID_UNTIL:
+            this.parseValidUntilLine(line, parts);
+            break;
+          case VOTING_DELAY:
+            this.parseVotingDelayLine(line, parts);
+            break;
+          case CLIENT_VERSIONS:
+            this.parseClientVersionsLine(line, parts);
+            break;
+          case SERVER_VERSIONS:
+            this.parseServerVersionsLine(line, parts);
+            break;
+          case RECOMMENDED_CLIENT_PROTOCOLS:
+            this.parseRecommendedClientProtocolsLine(line, parts);
+            break;
+          case RECOMMENDED_RELAY_PROTOCOLS:
+            this.parseRecommendedRelayProtocolsLine(line, parts);
+            break;
+          case REQUIRED_CLIENT_PROTOCOLS:
+            this.parseRequiredClientProtocolsLine(line, parts);
+            break;
+          case REQUIRED_RELAY_PROTOCOLS:
+            this.parseRequiredRelayProtocolsLine(line, parts);
+            break;
+          case PACKAGE:
+            this.parsePackageLine(line, parts);
+            break;
+          case KNOWN_FLAGS:
+            this.parseKnownFlagsLine(line, parts);
+            break;
+          case PARAMS:
+            this.parseParamsLine(line, parts);
+            break;
+          case SHARED_RAND_PREVIOUS_VALUE:
+            this.parseSharedRandPreviousValueLine(line, parts);
+            break;
+          case SHARED_RAND_CURRENT_VALUE:
+            this.parseSharedRandCurrentValueLine(line, parts);
+            break;
+          default:
+            if (this.unrecognizedLines == null) {
+              this.unrecognizedLines = new ArrayList<>();
+            }
+            this.unrecognizedLines.add(line);
+        }
       }
     }
   }
@@ -133,22 +134,23 @@ public class RelayNetworkStatusConsensusImpl extends NetworkStatusImpl
 
   protected void parseFooter(int offset, int length)
       throws DescriptorParseException {
-    Scanner scanner = this.newScanner(offset, length).useDelimiter(NL);
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      String[] parts = line.split("[ \t]+");
-      Key key = Key.get(parts[0]);
-      switch (key) {
-        case DIRECTORY_FOOTER:
-          break;
-        case BANDWIDTH_WEIGHTS:
-          this.parseBandwidthWeightsLine(line, parts);
-          break;
-        default:
-          if (this.unrecognizedLines == null) {
-            this.unrecognizedLines = new ArrayList<>();
-          }
-          this.unrecognizedLines.add(line);
+    try (Scanner scanner = this.newScanner(offset, length).useDelimiter(NL)) {
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        String[] parts = line.split("[ \t]+");
+        Key key = Key.get(parts[0]);
+        switch (key) {
+          case DIRECTORY_FOOTER:
+            break;
+          case BANDWIDTH_WEIGHTS:
+            this.parseBandwidthWeightsLine(line, parts);
+            break;
+          default:
+            if (this.unrecognizedLines == null) {
+              this.unrecognizedLines = new ArrayList<>();
+            }
+            this.unrecognizedLines.add(line);
+        }
       }
     }
   }
