@@ -73,23 +73,24 @@ public class BridgeNetworkStatusImpl extends NetworkStatusImpl
     this.enoughMtbfInfo = -1;
     this.ignoringAdvertisedBws = -1;
 
-    Scanner scanner = this.newScanner(offset, length).useDelimiter(NL);
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      String[] parts = line.split("[ \t]+");
-      Key key = Key.get(parts[0]);
-      switch (key) {
-        case PUBLISHED:
-          this.parsePublishedLine(line, parts);
-          break;
-        case FLAG_THRESHOLDS:
-          this.parseFlagThresholdsLine(line, parts);
-          break;
-        default:
-          if (this.unrecognizedLines == null) {
-            this.unrecognizedLines = new ArrayList<>();
-          }
-          this.unrecognizedLines.add(line);
+    try (Scanner scanner = this.newScanner(offset, length).useDelimiter(NL)) {
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        String[] parts = line.split("[ \t]+");
+        Key key = Key.get(parts[0]);
+        switch (key) {
+          case PUBLISHED:
+            this.parsePublishedLine(line, parts);
+            break;
+          case FLAG_THRESHOLDS:
+            this.parseFlagThresholdsLine(line, parts);
+            break;
+          default:
+            if (this.unrecognizedLines == null) {
+              this.unrecognizedLines = new ArrayList<>();
+            }
+            this.unrecognizedLines.add(line);
+        }
       }
     }
   }
