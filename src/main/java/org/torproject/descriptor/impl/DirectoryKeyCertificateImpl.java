@@ -36,81 +36,82 @@ public class DirectoryKeyCertificateImpl extends DescriptorImpl
   }
 
   private void parseDescriptorBytes() throws DescriptorParseException {
-    Scanner scanner = this.newScanner().useDelimiter(NL);
-    Key nextCrypto = Key.EMPTY;
-    StringBuilder crypto = null;
-    while (scanner.hasNext()) {
-      String line = scanner.next();
-      String[] parts = line.split("[ \t]+");
-      Key key = Key.get(parts[0]);
-      switch (key) {
-        case DIR_KEY_CERTIFICATE_VERSION:
-          this.parseDirKeyCertificateVersionLine(line);
-          break;
-        case DIR_ADDRESS:
-          this.parseDirAddressLine(line, parts);
-          break;
-        case FINGERPRINT:
-          this.parseFingerprintLine(line, parts);
-          break;
-        case DIR_IDENTITY_KEY:
-          this.parseDirIdentityKeyLine(line);
-          nextCrypto = key;
-          break;
-        case DIR_KEY_PUBLISHED:
-          this.parseDirKeyPublishedLine(line, parts);
-          break;
-        case DIR_KEY_EXPIRES:
-          this.parseDirKeyExpiresLine(line, parts);
-          break;
-        case DIR_SIGNING_KEY:
-          this.parseDirSigningKeyLine(line);
-          nextCrypto = key;
-          break;
-        case DIR_KEY_CROSSCERT:
-          this.parseDirKeyCrosscertLine(line);
-          nextCrypto = key;
-          break;
-        case DIR_KEY_CERTIFICATION:
-          this.parseDirKeyCertificationLine(line);
-          nextCrypto = key;
-          break;
-        case CRYPTO_BEGIN:
-          crypto = new StringBuilder();
-          crypto.append(line).append(NL);
-          break;
-        case CRYPTO_END:
-          crypto.append(line).append(NL);
-          String cryptoString = crypto.toString();
-          crypto = null;
-          switch (nextCrypto) {
-            case DIR_IDENTITY_KEY:
-              this.dirIdentityKey = cryptoString;
-              break;
-            case DIR_SIGNING_KEY:
-              this.dirSigningKey = cryptoString;
-              break;
-            case DIR_KEY_CROSSCERT:
-              this.dirKeyCrosscert = cryptoString;
-              break;
-            case DIR_KEY_CERTIFICATION:
-              this.dirKeyCertification = cryptoString;
-              break;
-            default:
-              throw new DescriptorParseException("Unrecognized crypto "
-                  + "block in directory key certificate.");
-          }
-          nextCrypto = Key.EMPTY;
-          break;
-        default:
-          if (crypto != null) {
+    try (Scanner scanner = this.newScanner().useDelimiter(NL)) {
+      Key nextCrypto = Key.EMPTY;
+      StringBuilder crypto = null;
+      while (scanner.hasNext()) {
+        String line = scanner.next();
+        String[] parts = line.split("[ \t]+");
+        Key key = Key.get(parts[0]);
+        switch (key) {
+          case DIR_KEY_CERTIFICATE_VERSION:
+            this.parseDirKeyCertificateVersionLine(line);
+            break;
+          case DIR_ADDRESS:
+            this.parseDirAddressLine(line, parts);
+            break;
+          case FINGERPRINT:
+            this.parseFingerprintLine(line, parts);
+            break;
+          case DIR_IDENTITY_KEY:
+            this.parseDirIdentityKeyLine(line);
+            nextCrypto = key;
+            break;
+          case DIR_KEY_PUBLISHED:
+            this.parseDirKeyPublishedLine(line, parts);
+            break;
+          case DIR_KEY_EXPIRES:
+            this.parseDirKeyExpiresLine(line, parts);
+            break;
+          case DIR_SIGNING_KEY:
+            this.parseDirSigningKeyLine(line);
+            nextCrypto = key;
+            break;
+          case DIR_KEY_CROSSCERT:
+            this.parseDirKeyCrosscertLine(line);
+            nextCrypto = key;
+            break;
+          case DIR_KEY_CERTIFICATION:
+            this.parseDirKeyCertificationLine(line);
+            nextCrypto = key;
+            break;
+          case CRYPTO_BEGIN:
+            crypto = new StringBuilder();
             crypto.append(line).append(NL);
-          } else {
-            if (this.unrecognizedLines == null) {
-              this.unrecognizedLines = new ArrayList<>();
+            break;
+          case CRYPTO_END:
+            crypto.append(line).append(NL);
+            String cryptoString = crypto.toString();
+            crypto = null;
+            switch (nextCrypto) {
+              case DIR_IDENTITY_KEY:
+                this.dirIdentityKey = cryptoString;
+                break;
+              case DIR_SIGNING_KEY:
+                this.dirSigningKey = cryptoString;
+                break;
+              case DIR_KEY_CROSSCERT:
+                this.dirKeyCrosscert = cryptoString;
+                break;
+              case DIR_KEY_CERTIFICATION:
+                this.dirKeyCertification = cryptoString;
+                break;
+              default:
+                throw new DescriptorParseException("Unrecognized crypto "
+                        + "block in directory key certificate.");
             }
-            this.unrecognizedLines.add(line);
-          }
+            nextCrypto = Key.EMPTY;
+            break;
+          default:
+            if (crypto != null) {
+              crypto.append(line).append(NL);
+            } else {
+              if (this.unrecognizedLines == null) {
+                this.unrecognizedLines = new ArrayList<>();
+              }
+              this.unrecognizedLines.add(line);
+            }
+        }
       }
     }
   }
